@@ -1,0 +1,130 @@
+version: 2
+
+sources:
+  - name: raw_meta_equipment
+    database: sipher-data-platform
+    schema: raw_meta_equipment
+
+    tables:
+      - name: blueprint
+        description: "Table containing information about blueprints."
+        identifier: blueprint
+        columns:
+          - name: type
+            description: "If column type has value 'Gear', column gearType will have values. Otherwise, it belongs to weaponType"
+            tests:
+              - accepted_values:
+                  values: ['Gear']
+                  config:
+                    where: "gearType IS NOT NULL"
+          - name: weaponType
+            description: "Test to check weaponType column has values only if gearType column is Null"
+            tests:
+              - accepted_values:
+                  values: [null]
+                  config:
+                    where: "gearType IS NOT NULL"
+          - name: race
+            description: "Test to check Race only has values if gearType is not null"
+            tests:
+              - accepted_values:
+                  values: [null]
+                  config:
+                    where: "gearType IS NULL"
+          - name: tier
+            description: "Tier of table blueprint"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+            
+      - name: capsule
+        description: "Table about capsule"      
+        identifier: capsule 
+        columns:
+          - name: id
+            description: "Id of table capsule"
+            tests:
+              - not_null
+          - name: tier
+            description: "Tier of table capsule"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+      - name: character
+        description: "Table about character"      
+        identifier: character
+        columns:
+          - name: id
+            description: "Id of table character"
+            tests:
+              - not_null
+          - name: tier
+            description: "Tier of table character"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+      - name: currency
+        description: "Table about currency"      
+        identifier: currency
+        columns:
+          - name: id
+            description: "Id of table currency"
+            tests:
+              - not_null
+          - name: tier
+            description: "Tier of table currency"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+      - name: equipment
+        description: "Table about equipment"      
+        identifier: equipment
+        columns:
+          - name: id
+            description: "Id of table equipment"
+            tests:
+              - not_null
+          - name: tier
+            description: "Tier of table equipment"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+      - name: equipment_part
+        description: "Table about equipment_part"      
+        identifier: equipment_part
+        columns:
+          - name: tier
+            description: "Tier of table equipment_part"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+      - name: sipher_game_reward
+        description: "Table about sipher reward"      
+        identifier: sipher_game_reward
+        columns:
+          - name: id
+            description: "Id of table sipher_game_reward"
+            tests:
+              - not_null
+
+      - name: weapon
+        description: "Table about weapon"      
+        identifier: weapon
+        columns:
+          - name: id
+            description: "Id of table weapon"
+            tests:
+              - not_null
+          - name: tier
+            description: "Tier of table weapon"
+            tests:
+              - dbt_expectations.expect_column_values_to_be_of_type: 
+                  column_type: int64
+
+
+
