@@ -1,0 +1,1 @@
+SELECT * FROM `sipher-data-testing`.`staging_social`.`stg_discord_user_info_latest_snapshot`
