@@ -14,8 +14,6 @@
   , 'post_engaged_users'
   , 'post_impressions'
   , 'post_impressions_fan'
-  , 'post_impressions_fan_paid'
-  , 'post_impressions_fan_paid_unique'
   , 'post_impressions_fan_unique'
   , 'post_impressions_nonviral'
   , 'post_impressions_nonviral_unique'
@@ -122,8 +120,8 @@ WITH posts AS (
         , post_impressions_paid
         
         , post_impressions_fan
-        , post_impressions_fan_paid
-        , post_impressions_fan_paid_unique
+--        , post_impressions_fan_paid
+--        , post_impressions_fan_paid_unique
         , post_impressions_fan_unique
 
         , post_impressions_nonviral

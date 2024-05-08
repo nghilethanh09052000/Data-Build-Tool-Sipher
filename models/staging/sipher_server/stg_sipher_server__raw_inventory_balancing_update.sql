@@ -18,7 +18,7 @@ WITH pre_process_data AS(
         updated_balance_timestamp,
         updated_balance_date
     FROM {{ source('raw_game_meta', 'raw_inventory_balancing_update') }}
-    WHERE updated_balance_date < CURRENT_DATE()
+    WHERE updated_balance_date < CURRENT_DATE() AND updated_balance_date >= '2024-03-08'
 )
 
 SELECT

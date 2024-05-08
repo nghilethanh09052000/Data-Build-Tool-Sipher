@@ -60,23 +60,33 @@ on-run-end:
 models:
   dbt_sipher:
     marts:
+      adjust:
+        +schema: "adjust"
       social:
         +schema: "mart_social"
       staking_pool:
         +schema: "staking_public_data"
       sipher_odyssey_core:
         +schema: "sipher_odyssey_core"
+      sipher_odyssey_crafting:
+        +schema: "sipher_odyssey_crafting"
       sipher_odyssey_level_design:
         +schema: "sipher_odyssey_level_design"
       sipher_odyssey_inventory:
         +schema: "sipher_odyssey_inventory"
       hidden_atlas_core:
         +schema: "hidden_atlas_core"
-      artventure_ai_recipe:
-        +schema: "artventure_ai_recipe"
-      artventure_utm:
-        +schema: "artventure_utm"
+      artventure:
+        +schema: "artventure"
+      google_ads:
+        +schema: "google_ads"
+      finance_incubator:
+        +schema: "finance_incubator"
+      sipher_odyssey_shop_transaction:
+        +schema: "sipher_odyssey_shop_transaction"
     staging:
+      adjust:
+        +schema: "staging_adjust"
       social:
         +schema: "staging_social"
       aws__ather_id:
@@ -95,12 +105,20 @@ models:
         +schema: "raw_aws_opensearch_onchain_nft"
       firebase:
         +schema: "staging_firebase"
-      sipher_meta_equipment:
-        +schema: "staging_sipher_meta_equipment"
       sipher_server:
         +schema: "staging_sipher_server"
       max_mediation:
-        +schema: "raw_max_mediation"
+        +schema: "staging_max_mediation"
+      artventure:
+        +schema: "raw_artventure"
+      appsflyer:
+        +schema: "staging_appsflyer"
+      sipher_odyssey_shop_transaction:
+        +schema: "staging_sipher_odyssey_shop_transaction"
     reporting:
       social:
         +schema: "reporting_social"
+      adjust:
+        +schema: "reporting_adjust"
+      sipher_odyssey_user:
+        +schema: reporting_sipher_odyssey_user

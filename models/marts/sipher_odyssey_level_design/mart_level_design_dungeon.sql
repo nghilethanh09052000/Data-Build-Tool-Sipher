@@ -74,23 +74,11 @@ WITH raw AS
 	WHERE dungeon_start_cnt = 1 
 )
 
-
-, buildtb AS 
-(
-    SELECT DISTINCT
-        build,
-        user_id  
-    FROM {{ ref('mart_level_design_gameplay') }}
-)
-
-
 SELECT DISTINCT
     a.*
     ,c.sum_time_played_to_win
     ,c1.dungeon_start_cnt as attempts_to_win
     ,d.day_diff,
-    ew.Date_Added,ew.Group,
-    build
 FROM ordered_dungeon a
 LEFT JOIN sum_time_played_to_wintb c
     ON c.user_id = a.user_id AND c.dungeon_id_difficulty = a.dungeon_id_difficulty
@@ -98,8 +86,3 @@ LEFT JOIN attempts_to_wintb c1
     ON c1.user_id = a.user_id AND c1.dungeon_id_difficulty = a.dungeon_id_difficulty
 LEFT JOIN day_diff_win d
     ON d.user_id = a.user_id AND d.dungeon_id_difficulty = a.dungeon_id_difficulty
-LEFT JOIN  `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_closed_alpha_whitelist_email` ew 
-    ON a.email = ew.email
-LEFT JOIN  buildtb bn 
-    ON a.user_id = bn.user_id
- WHERE a.user_id <> 'AAA20920'

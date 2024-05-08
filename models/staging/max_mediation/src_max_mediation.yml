@@ -44,3 +44,5 @@ sources:
             tests:
               - not_null
               - dbt_expectations.expect_column_to_exist
+      - name: raw_cohort_ad_revenue_perpormance
+        identifier: raw_cohort_ad_revenue_perpormance

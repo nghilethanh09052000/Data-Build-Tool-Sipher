@@ -28,4 +28,29 @@ WITH devices AS (
   GROUP BY game_user_id, ather_id
 )
 
-SELECT * FROM devices
+, day0_version AS (
+  SELECT
+    *
+  FROM {{ ref('int_sipher_odyssey_player_day0_version') }}
+)
+
+, geo AS (
+  SELECT
+    *
+  FROM {{ ref('int_sipher_odyssey_player_geo') }}
+)
+
+, version AS (
+  SELECT
+    *
+  FROM {{ ref('int_sipher_odyssey_player_version') }}
+)
+
+
+SELECT 
+  day0_version.*,
+  geo.game_user_id,
+  geo.country AS country
+FROM day0_version
+LEFT JOIN geo
+  ON day0_version.user_id = geo.game_user_id

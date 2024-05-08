@@ -6,7 +6,7 @@
 
 {%- set date_filter = get_max_column_value(
     table=ref('stg_twitter_profile_stats'),
-    column='snapshot_date'
+    column='snapshot_date_tzict'
 ) -%}
 
 
@@ -22,5 +22,5 @@ SELECT
   MAX(pinned_tweet_id) AS pinned_tweet_id,
   MAX(profile_created_at) AS profile_created_at
 FROM {{ ref('stg_twitter_profile_stats') }}
-WHERE snapshot_date = "{{ date_filter }}"
+WHERE snapshot_date_tzict = "{{ date_filter }}"
 GROUP BY id

@@ -20,6 +20,7 @@ WITH
     FROM
       {{ ref('stg_firebase__sipher_odyssey_events_all_time') }}
     WHERE event_name IN ('login_start')
+    AND __table_suffix >= '20240301'
     GROUP BY 1,2
   )
 
@@ -33,6 +34,7 @@ WITH
 
     FROM {{ ref('stg_firebase__sipher_odyssey_events_all_time') }}
     WHERE event_name IN ('login_start')
+    AND __table_suffix >= '20240301'
   )
 
   ,user_email AS
@@ -56,11 +58,8 @@ WITH
   (
     SELECT
       DISTINCT
-      elu.*,
-      CASE
-          WHEN ue.email LIKE '%sipher.xyz%' THEN REPLACE(ue.email, 'sipher.xyz', 'atherlabs.com')
-          ELSE ue.email
-      END AS email
+      elu.*
+      ,email
       ,ue.name AS user_name
     FROM email_last_updated AS elu
     LEFT JOIN user_email AS ue 
@@ -103,52 +102,18 @@ WITH
     GROUP BY user_id, ather_id, email, prefix_user_id,suffix_user_id, user_name
     )
 
-    ,company_list AS(
-    SELECT 
-        *
-    FROM pre_final
-    WHERE
-        (prefix_email LIKE 'thuy.dang%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'anh.phan%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'tan.vo%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'tester%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'dunghoang%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'duong.cao%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'van.truong%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'thang.nguyenduy%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'dong.nguyenha%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'tai.pham%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'thanh.khuong%' AND suffix_email IN ('atherlabs.com')) OR
-        (prefix_email LIKE 'huy.vu%' AND suffix_email IN ('atherlabs.com'))
-    )
-    
-    ,final AS(
-    SELECT 
-        *
-    FROM pre_final
-    WHERE (suffix_user_id BETWEEN 35163 AND 35175
-      OR suffix_user_id > 35192)
-      AND ather_id IS NOT NULL 
-      AND user_id NOT IN ( SELECT DISTINCT user_id FROM company_list)
-    )
-
-    , user_first_open_data AS(
-      SELECT final.*
-      FROM final
-          LEFT JOIN `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_cheating_users` b using(user_id)
-      WHERE b.user_id IS NULL
-    )
-
     , login_start_raw AS(
     SELECT DISTINCT 
       user_id,
       event_name,
       {{ get_string_value_from_event_params(key='build_number') }} AS build_number,
       app_info.version AS app_version,
+      geo.country AS country,
       MIN (event_timestamp) AS current_build_timestamp
     FROM {{ ref('stg_firebase__sipher_odyssey_events_all_time') }}
     WHERE event_name = 'login_start'
-    GROUP BY user_id, event_name, build_number, app_version
+    AND __table_suffix >= '20240301'
+    GROUP BY user_id, event_name, build_number, app_version, country
     )
 
     , login_start AS
@@ -163,19 +128,19 @@ WITH
       ,user_name
       ,current_build_timestamp
       ,LEAD(current_build_timestamp,1) OVER (PARTITION BY login_start_raw.user_id ORDER BY current_build_timestamp) AS next_build_timestamp
+      ,CASE
+        WHEN email LIKE '%atherlabs%' THEN TRUE
+        ELSE FALSE
+      END AS is_atherlabs_employee
     FROM login_start_raw
-    JOIN user_first_open_data cohort
+    JOIN pre_final cohort
       ON (login_start_raw.user_id = cohort.user_id)
   )
 
 SELECT DISTINCT 
   ls.*,
-  bnc.pack_name,
-  ew.Date_Added,
-  ew.group
 FROM login_start ls 
-LEFT JOIN `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_build_number_classification` bnc ON  CAST(ls.build_number AS INT64) = CAST(bnc.build_number AS INT64) AND ls.app_version = bnc.app_version
-LEFT JOIN  `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_closed_alpha_whitelist_email` ew ON ls.email = ew.email
+
 
 
    

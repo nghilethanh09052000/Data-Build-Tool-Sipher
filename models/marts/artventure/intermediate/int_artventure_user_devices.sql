@@ -15,7 +15,8 @@
 
 WITH raw AS (
     SELECT
-        *,
+        * EXCEPT(user_id),
+        {{ get_string_value_from_event_params(key="user_uid") }} AS user_id,
         {{ get_string_value_from_event_params(key="user_email") }} AS user_email,
     FROM {{ ref('stg_firebase__artventure_events_all_time') }}
     WHERE event_name = 'click'

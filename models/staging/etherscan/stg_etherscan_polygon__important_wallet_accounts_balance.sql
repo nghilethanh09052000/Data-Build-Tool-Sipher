@@ -7,7 +7,7 @@ SELECT
     wallet_name,
     token_address,
     token_symbol,
-    CAST(value AS NUMERIC) AS value,
+    SAFE_CAST(value AS NUMERIC) AS value,
     decimal,
     network,
     timestamp,

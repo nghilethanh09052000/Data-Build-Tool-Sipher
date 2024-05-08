@@ -22,8 +22,8 @@ WITH raw AS (
         *,
         CASE WHEN 
             {{ get_string_value_from_event_params(key="page_location") }} like '%alpha%'
-            OR REGEXP_CONTAINS({{ get_string_value_from_event_params(key="page_location") }}, 
-                r"https://artventure.ai/ai-recipes/[^/]+")
+            -- OR REGEXP_CONTAINS({{ get_string_value_from_event_params(key="page_location") }}, 
+            --     r"https://artventure.ai/ai-recipes?[^/]+")
             THEN 'alpha' ELSE 'internal'
         END AS version
     FROM raw

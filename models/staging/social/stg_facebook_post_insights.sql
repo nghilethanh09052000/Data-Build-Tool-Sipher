@@ -12,8 +12,8 @@ SELECT
   , CAST(post_engaged_users               AS INT64) AS post_engaged_users
   , CAST(post_impressions                 AS INT64) AS post_impressions
   , CAST(post_impressions_fan             AS INT64) AS post_impressions_fan
-  , CAST(post_impressions_fan_paid        AS INT64) AS post_impressions_fan_paid
-  , CAST(post_impressions_fan_paid_unique AS INT64) AS post_impressions_fan_paid_unique
+--  , CAST(post_impressions_fan_paid        AS INT64) AS post_impressions_fan_paid
+--  , CAST(post_impressions_fan_paid_unique AS INT64) AS post_impressions_fan_paid_unique
   , CAST(post_impressions_fan_unique      AS INT64) AS post_impressions_fan_unique
   , CAST(post_impressions_nonviral        AS INT64) AS post_impressions_nonviral
   , CAST(post_impressions_nonviral_unique AS INT64) AS post_impressions_nonviral_unique

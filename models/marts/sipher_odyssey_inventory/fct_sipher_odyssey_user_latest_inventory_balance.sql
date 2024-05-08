@@ -59,7 +59,7 @@ WITH character AS(
     int.instance_id,
     int.item_code,
     int.item_type AS item_category,
-    dim.item_category AS item_type,
+    dim.item_type AS item_type,
     CAST(NULL AS STRING) AS item_sub_type,
     dim.race AS race,
     CAST(NULL AS STRING) AS rarity,
@@ -71,7 +71,7 @@ WITH character AS(
     int.updated_balance_date,
     int.updated_balance_timestamp,
   FROM {{ ref('int_user_inventory_balance_latest_update_by_instance') }} int
-  LEFT JOIN `sipher-data-platform.reporting_game_meta.dim_sipher_meta_em_shards` dim
+  LEFT JOIN {{ ref('dim_sipher_odyssey_inventory__em_shards')}} dim
 --   LEFT JOIN `sipher-data-testing.reporting_game_meta.dim_sipher_meta_em_shards` dim
   ON dim.item_id = int.instance_id 
   WHERE int.item_type IN ('EM Shards', 'Currency')
@@ -259,11 +259,11 @@ WITH character AS(
     int.instance_id,
     int.item_code,
     int.item_type AS item_category,
-    dim.weapon_type AS item_type,
-    dim.weapon_subtype AS item_sub_type,
+    dim.item_type AS item_type,
+    dim.item_sub_type AS item_sub_type,
     CAST(NULL AS STRING)  AS race,
     COALESCE(dim.rarity, int.rarity) AS rarity,
-    COALESCE(CAST(dim.tier AS INT64), int.tier) AS tier,
+    int.tier AS tier,
     int.level,
     int.ps AS ps,
     int.boost AS boost,
@@ -271,7 +271,7 @@ WITH character AS(
     int.updated_balance_date,
     int.updated_balance_timestamp,
   FROM {{ ref('int_user_inventory_balance_latest_update_by_instance') }} int
-  LEFT JOIN `sipher-data-platform.reporting_game_meta.dim_sipher_meta_weapon` dim
+  LEFT JOIN {{ ref('dim_sipher_odyssey_inventory__weapon')}} dim
 --   LEFT JOIN `sipher-data-testing.reporting_game_meta.dim_sipher_meta_weapon` dim
   ON dim.item_id = int.item_code 
   WHERE int.item_type IN ('Weapon')
@@ -309,11 +309,11 @@ WITH character AS(
     int.instance_id,
     int.item_code,
     int.item_type AS item_category,
-    dim.item_category AS item_type,
-    COALESCE(int.item_sub_type, dim.gear_type) AS item_sub_type,
+    dim.item_type AS item_type,
+    COALESCE(int.item_sub_type, dim.item_sub_type) AS item_sub_type,
     dim.race AS race,
     COALESCE(dim.rarity, int.rarity) AS rarity,
-    COALESCE(CAST(dim.tier AS INT64), int.tier) AS tier,
+    int.tier AS tier,
     int.level,
     int.ps AS ps,
     int.boost AS boost,
@@ -321,7 +321,7 @@ WITH character AS(
     int.updated_balance_date,
     int.updated_balance_timestamp,
   FROM {{ ref('int_user_inventory_balance_latest_update_by_instance') }} int
-  LEFT JOIN `sipher-data-platform.reporting_game_meta.dim_sipher_meta_gear` dim
+  LEFT JOIN {{ ref('dim_sipher_odyssey_inventory__gear')}} dim
 --   LEFT JOIN `sipher-data-testing.reporting_game_meta.dim_sipher_meta_gear` dim
   ON dim.item_id = int.item_code 
   WHERE int.item_type IN ('Gear')

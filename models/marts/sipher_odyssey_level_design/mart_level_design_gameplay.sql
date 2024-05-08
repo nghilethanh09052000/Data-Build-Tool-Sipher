@@ -2,8 +2,18 @@
     materialized='table',
 )-}}
 
+WITH remove_duplicate AS
+(	
+	SELECT *EXCEPT(rk)
+	FROM (
+		SELECT *,
+			ROW_NUMBER() OVER(PARTITION BY user_id, session_id ORDER BY gameplay_start_event_timestamp) rk,
+		FROM {{ ref('fct_level_design_gameplay') }}
+	)
+	WHERE rk = 1
+)
 
-WITH max_lvl_reach AS
+,max_lvl_reach AS
 (
 	SELECT  
 		user_id
@@ -16,9 +26,9 @@ WITH max_lvl_reach AS
 	       ,session_id
 	       ,level_start_level_count
 		   ,time_played
-		FROM  {{ ref('fct_level_design_lvl') }}
+		FROM  {{ ref('mart_level_design_lvl') }}
 	)
-	WHERE true
+	WHERE TRUE
 	GROUP BY  1,2
 ) 
 
@@ -30,24 +40,30 @@ WITH max_lvl_reach AS
 		,COALESCE(gameplay_time_played,time_played )gameplay_time_played
 		,CAST(character_PS AS INT64) + CAST(armor_PS AS INT64) + CAST(head_PS AS INT64) + CAST(shoes_PS AS INT64)+ CAST(gloves_PS AS INT64) + CAST(weapon1_PS AS INT64) + CAST(weapon2_PS AS INT64) + CAST(legs_PS AS INT64) AS totalPS
 		,UPPER(CONCAT(
-		CASE 
-			WHEN  a.difficulty  LIKE CONCAT('%',dim_difficulty.original_name,'%') THEN dim_difficulty.rename
-			ELSE a.difficulty
-		END 
-		,'_'
-		,
-		CASE  
-			WHEN a.dungeon_id  LIKE '%ENDLESS%' THEN 'ENDLESS'
-			WHEN a.dungeon_id  LIKE CONCAT('%', dim_dungeon.original_name,'%') THEN CONCAT(dim_dungeon.rename,REPLACE(a.dungeon_id,CONCAT('DUNGEON_', dim_dungeon.original_name),''))
-			ELSE a.dungeon_id
-		END 
-		)) AS dungeon_id_difficulty
+					CASE 
+						WHEN a.difficulty  LIKE CONCAT('%',dim_difficulty.original_name,'%') THEN dim_difficulty.rename
+						ELSE a.difficulty
+					END 
+					,'_'
+					,
+					REPLACE(
+							CASE  
+								WHEN a.dungeon_id LIKE '%ENDLESS%' THEN 'ENDLESS'
+								WHEN a.dungeon_id LIKE '%SHOOTEMUP%' THEN 'STU'
+								WHEN a.dungeon_id = 'DUNGEON_DOPAMIS' THEN '01DP_01'
+								WHEN a.dungeon_id LIKE CONCAT('%',dim_dungeon.original_name,'%') THEN REPLACE(a.dungeon_id, dim_dungeon.original_name, dim_dungeon.rename)
+								ELSE a.dungeon_id
+							END
+						, 'DUNGEON_', '')
 
-	FROM {{ ref('fct_level_design_gameplay') }} a
+		))
+		 AS dungeon_id_difficulty
+
+	FROM remove_duplicate a
 	LEFT JOIN max_lvl_reach ml
 	ON a.user_id = ml.user_id AND a.user_id = ml.user_id AND a.session_id = ml.session_id
 	LEFT JOIN `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_dungeon_difficulty` dim_dungeon
-	ON a.dungeon_id  LIKE CONCAT('%', dim_dungeon.original_name,'%')
+	ON a.dungeon_id  LIKE CONCAT('%',dim_dungeon.original_name,'%')
 	LEFT JOIN `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_dungeon_difficulty` dim_difficulty
 	ON a.difficulty  LIKE CONCAT('%',dim_difficulty.original_name,'%')
 ) 
@@ -79,43 +95,6 @@ WITH max_lvl_reach AS
 	LEFT JOIN max_min_ps_date_diff min_ ON raw.user_id = min_.user_id AND raw.day_diff = min_.day_diff AND raw.gameplay_start_event_timestamp = min_.min_gameplay_start_event_timestamp
 )
 
-,only1buildnumber AS 
-(
-	SELECT DISTINCT 
-		user_id 
-	FROM {{ this }}
-	GROUP BY 1
-	HAVING COUNT(DISTINCT build_number ) = 1
-)
-
-,user_old_bn AS 
-(
-	SELECT DISTINCT 
-		a.user_id
-	FROM {{ this }} a 
-	LEFT JOIN (
-		SELECT DISTINCT 
-			user_id  
-		FROM  {{ this }}
-		WHERE build_number IN ('1309211827','1309202141')
-		) b 
-		ON a.user_id = b.user_id
-	WHERE b.user_id IS NULL
-)
-
-
 SELECT DISTINCT 
 	f.*,
-	bnc.pack_name,
-	PARSE_DATE('%m/%d/%Y', ew.date_added) AS date_added,
-	ew.group AS group_,
-	CASE 
-		WHEN day0_date_tzutc >= DATE('2023-08-01') AND bn.user_id IS NOT NULL AND f.build_number IN ('1309211827','1309202141') THEN 'new' 
-		WHEN day0_date_tzutc >= DATE('2023-08-01') AND obn.user_id IS NOT NULL THEN 'old' 
-	END AS build
-
 FROM final f 
-LEFT JOIN `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_build_number_classification` bnc ON  f.build_number = bnc.build_number AND f.app_version = bnc.app_version
-LEFT JOIN  `sipher-data-platform.sipher_odyssey_core.dim_sipher_odyssey_closed_alpha_whitelist_email` ew ON f.email = ew.email
-LEFT JOIN  only1buildnumber bn ON f.user_id = bn.user_id
-LEFT JOIN  user_old_bn obn ON f.user_id = obn.user_id

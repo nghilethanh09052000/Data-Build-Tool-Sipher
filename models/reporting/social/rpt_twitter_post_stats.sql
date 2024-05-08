@@ -12,7 +12,7 @@ WITH
   twitter_timeline AS (
     SELECT
       *,
-      (SELECT rt_list.item.type FROM UNNEST(referenced_tweets.list) AS rt_list) AS post_type
+      (SELECT rt_list.item.type FROM UNNEST(referenced_tweets.list) AS rt_list ORDER BY 1 NULLS FIRST LIMIT 1) AS post_type
     FROM {{ ref("stg_twitter_timeline") }}
   )
 

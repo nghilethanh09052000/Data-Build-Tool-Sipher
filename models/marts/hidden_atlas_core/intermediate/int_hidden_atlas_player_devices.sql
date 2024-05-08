@@ -18,6 +18,7 @@
 WITH raw AS (
   SELECT
     *,
+    -- {{ get_value_from_user_properties(key="ather_id") }} AS ather_id,
     {{ clean_advertising_id() }} AS cleaned_advertising_id
   FROM {{ ref('stg_firebase__hidden_atlas_events_all_time') }}
 )
